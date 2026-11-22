@@ -381,9 +381,11 @@ function newChat() {
     .classList.remove('open');
 }
 
+
 document.getElementById('chatForm')
-  .addEventListener('submit', function(event) {
+  .addEventListener('submit', async function(event) {
     event.preventDefault();
+
     const text = input.value.trim();
     if (!text) return;
 
@@ -391,14 +393,27 @@ document.getElementById('chatForm')
     addMessage(text, 'user');
     input.value = '';
 
-    addMessage(
-      'Your message is ready for the next step. ' +
-      'This is a website preview. We will connect ' +
-      'the existing n8n AI assistant after testing ' +
-      'the interface and approval safeguards.',
-      'assistant'
-    );
+    try {
+      const response = await fetch('/.netlify/functions/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: text })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+
+      addMessage(data.output || 'No response received', 'assistant');
+    } catch (error) {
+      addMessage('Unable to connect: ' + error.message, 'assistant');
+    }
   });
+
 </script>
 </body>
 </html>
