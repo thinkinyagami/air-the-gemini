@@ -5,8 +5,14 @@ exports.handler = async (event) => {
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Cache-Control": "no-store",
   };
+
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 204, headers, body: "" };
+  }
 
   if (event.httpMethod !== "POST") {
     return {
@@ -16,13 +22,14 @@ exports.handler = async (event) => {
     };
   }
 
-  // Keep the email-sending workflow disconnected until
-  // visitor authentication and rate limits are configured.
+  // Keep the Gmail workflow disconnected from public visitors.
+  // A real connection requires visitor authentication and rate limits.
   return {
-    statusCode: 503,
+    statusCode: 200,
     headers,
     body: JSON.stringify({
-      error: "Live AI chat is not enabled yet.",
+      output:
+        "Air The Gemini demo is online. You can preview the interface, but live AI responses and email sending are not enabled for public visitors.",
     }),
   };
 };
